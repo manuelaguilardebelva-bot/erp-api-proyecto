@@ -56,3 +56,15 @@ class Timesheet(Base):
 
     def __repr__(self):
         return f"<Timesheet(user={self.usuario_id}, status={self.status})>"
+
+class Log(Base):
+    __tablename__ = "logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    entity: Mapped[str] = mapped_column(nullable=False)
+    action: Mapped[str] = mapped_column(nullable=False)
+    message: Mapped[str] = mapped_column(nullable=False)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Log(entity={self.entity}, action={self.action})>"

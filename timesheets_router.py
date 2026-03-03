@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 
 from database import get_db
-from models import Timesheet, TimesheetStatus
+from models import Timesheet, TimesheetStatus, Log
 
 router = APIRouter(
     prefix="/timesheets",
@@ -47,7 +47,15 @@ def clock_out(usuario_id: uuid.UUID, db: Session = Depends(get_db)):
     timesheet.minutes_worked = minutes_worked
     timesheet.status = TimesheetStatus.closed
 
-    # 5. Seguridad: Commit y refresh
+    # 5. Registro en la tabla logs
+    new_log = Log(
+        entity="timesheet",
+        action="clock-out",
+        message=f"El usuario {usuario_id} ha registrado {minutes_worked} minutos"
+    )
+    db.add(new_log)
+
+    # 6. Seguridad: Commit y refresh
     try:
         db.commit()
         db.refresh(timesheet)
@@ -58,7 +66,7 @@ def clock_out(usuario_id: uuid.UUID, db: Session = Depends(get_db)):
             detail=f"Error al guardar en la base de datos: {str(e)}"
         )
 
-    # 6. Devolver JSON con los minutos trabajados
+    # 7. Devolver JSON con los minutos trabajados
     return {
         "message": "Cierre de jornada exitoso",
         "usuario_id": str(usuario_id),
