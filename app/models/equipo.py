@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.usuario import Usuario
 
 
 class Equipo(Base):
@@ -40,10 +43,16 @@ class EquipoUsuario(Base):
     equipo_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("equipos.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    usuario_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    usuario_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("usuarios.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     rol: Mapped[str] = mapped_column(String(80), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=False, default=datetime.utcnow
     )
 
     equipo: Mapped[Equipo] = relationship("Equipo", back_populates="usuarios")
+    usuario: Mapped["Usuario"] = relationship("Usuario", back_populates="equipos")
